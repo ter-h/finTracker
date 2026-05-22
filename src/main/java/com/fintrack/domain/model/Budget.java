@@ -17,7 +17,7 @@ import java.util.UUID;
 @NoArgsConstructor
 public class Budget {
     @Id
-    @GeneratedValue(strategy = GeneratedType.UUID)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)

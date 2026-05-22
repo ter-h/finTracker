@@ -1,6 +1,6 @@
 package com.fintrack.domain.enums;
 
-public enum TransactioType {
+public enum TransactionType {
     INCOME,
     EXPENSE,
     TRANSFER

@@ -32,11 +32,11 @@ public class GlobalExceptionHandler {
             .body(new ErrorResponse("BAD_REQUEST", ex.getMessage(), Instant.now()));
     }
 
-    @ExceptionHandler(UnauthorizedException.class)
-    public ResponseEntity<ErrorResponse> handleUnauthorized(UnauthorizedException ex) {
+    @ExceptionHandler(UnauthorisedException.class)
+    public ResponseEntity<ErrorResponse> handleUnauthorised(UnauthorisedException ex) {
         return ResponseEntity
             .status(HttpStatus.UNAUTHORIZED)
-            .body(new ErrorResponse("UNAUTHORIZED", ex.getMessage(), Instant.now()));
+            .body(new ErrorResponse("UNAUTHORISED", ex.getMessage(), Instant.now()));
     }
 
     // This handles @Valid annotation failures (e.g. missing required field in request body)

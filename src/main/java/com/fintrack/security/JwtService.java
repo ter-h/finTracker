@@ -1,7 +1,7 @@
 package com.fintrack.security;
 
 import io.jsonwebtoken.*;
-import iojsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 

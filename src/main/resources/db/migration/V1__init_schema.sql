@@ -40,7 +40,7 @@ CREATE TABLE accounts (
     user_id     UUID         NOT NULL REFERENCES users (id) ON DELETE CASCADE,
     name        VARCHAR(100) NOT NULL,
     type        VARCHAR(30)  NOT NULL,
-    currency    CHAR(3)      NOT NULL DEFAULT 'USD',
+    currency    CHAR(3)      NOT NULL DEFAULT 'AUD',
     balance     DECIMAL(15, 2) NOT NULL DEFAULT 0,
     is_archived BOOLEAN      NOT NULL DEFAULT FALSE,
     created_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW()

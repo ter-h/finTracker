@@ -14,6 +14,7 @@ import java.util.UUID;
 @Entity
 @Getter
 @Setter
+@Table(name="transactions")
 @NoArgsConstructor
 public class Transaction {
     @Id

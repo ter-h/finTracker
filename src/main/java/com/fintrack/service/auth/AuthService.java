@@ -2,7 +2,7 @@ package com.fintrack.service.auth;
 
 import com.fintrack.domain.model.User;
 import com.fintrack.exception.BadRequestException;
-import com.fintrack.exception.UnauthorizedException;
+import com.fintrack.exception.UnauthorisedException;
 import com.fintrack.repository.UserRepository;
 import com.fintrack.security.JwtService;
 import com.fintrack.web.dto.request.LoginRequest;
@@ -52,11 +52,11 @@ public class AuthService {
         // 1. Find user by email
         User user = userRepository
             .findByEmailAndDeletedAtIsNull(request.email().toLowerCase().strip())
-            .orElseThrow(() -> new UnauthorizedException("Invalid email or password"));
+            .orElseThrow(() -> new UnauthorisedException("Invalid email or password"));
 
         // 2. Check password
         if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
-            throw new UnauthorizedException("Invalid email or password");
+            throw new UnauthorisedException("Invalid email or password");
         }
 
         log.info("User logged in: userId={}", user.getId());

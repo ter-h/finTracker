@@ -3,7 +3,7 @@ spring:
     name: fintrack
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/fintrack
+    url: jdbc:postgresql://localhost:5433/fintrack
     username: fintrack
     password: fintrack
     hikari:

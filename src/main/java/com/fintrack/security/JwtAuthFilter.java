@@ -30,7 +30,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
 
         // 1. Get the Authorization header
-        String authHeader = request.getHeader("Authorisation");
+        String authHeader = request.getHeader("Authorization");
 
         // 2. If there's no Bearer token, skip this filter (Spring Security will deny access if endpoint needs auth)
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {

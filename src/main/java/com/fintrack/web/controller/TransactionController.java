@@ -1,5 +1,8 @@
 package com.fintrack.web.controller;
 
+import com.fintrack.service.transaction.CsvImportService;
+import com.fintrack.web.dto.response.ImportSummaryResponse;
+import org.springframework.web.multipart.MultipartFile;
 import com.fintrack.security.UserPrincipal;
 import com.fintrack.service.transaction.TransactionService;
 import com.fintrack.web.dto.request.CreateTransactionRequest;
@@ -21,7 +24,7 @@ import java.util.UUID;
 public class TransactionController {
 
     private final TransactionService transactionService;
-
+    private final CsvImportService csvImportService;
     // GET /api/v1/transactions?page=0&size=20&accountId=xxx
     @GetMapping
     public ResponseEntity<PageResponse<TransactionResponse>> list(
@@ -77,5 +80,16 @@ public class TransactionController {
     ) {
         transactionService.deleteTransaction(principal.getId(), id);
         return ResponseEntity.noContent().build();   // 204 No Content
+    }
+
+    @PostMapping("/import")
+    public ResponseEntity<ImportSummaryResponse> importCsv(
+        @AuthenticationPrincipal UserPrincipal principal,
+        @RequestParam UUID accountId,
+        @RequestParam MultipartFile file
+    ) {
+        return ResponseEntity.ok(
+            csvImportService.importCsv(principal.getId(), accountId, file)
+        );
     }
 }

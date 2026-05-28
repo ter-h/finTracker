@@ -62,6 +62,8 @@ dependencies {
     // Testing
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
+
+    implementation("com.github.librepdf:openpdf:2.0.3")
 }
 
 tasks.withType<Test> {

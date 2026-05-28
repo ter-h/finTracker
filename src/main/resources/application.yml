@@ -48,6 +48,10 @@ management:
     web:
       exposure:
         include: health,info,metrics
+  health:
+    redis:
+      enabled: false
+  
 
 app:
   jwt:

@@ -1,0 +1,19 @@
+spring:
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: validate   # NEVER allow Hibernate to modify schema in production
+
+logging:
+  pattern:
+    console: '{"time":"%d","level":"%p","logger":"%logger{36}","msg":"%msg"}%n'
+  level:
+    root: WARN
+    com.fintrack: INFO
+    org.springframework.security: WARN
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus

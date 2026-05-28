@@ -54,6 +54,8 @@ app:
     secret: ${JWT_SECRET:thisIsAVeryLongSecretKeyForDevelopmentOnlyChangeInProduction123456}
     expiry-minutes: 15
     refresh-expiry-days: 7
+  mail:
+    from: noreply@fintrack.com
   frontend-url: http://localhost:5173
 
 logging:

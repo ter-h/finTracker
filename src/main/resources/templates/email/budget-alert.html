@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Budget Alert</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+           background: #f9fafb; margin: 0; padding: 0; color: #111827; }
+    .container { max-width: 520px; margin: 40px auto; background: #ffffff;
+                 border-radius: 12px; overflow: hidden;
+                 box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .header { padding: 32px; text-align: center;
+              background: #ef4444; }
+    .header.warning { background: #f59e0b; }
+    .header h1 { color: #fff; margin: 0; font-size: 22px; font-weight: 600; }
+    .body { padding: 32px; }
+    .stat { background: #f9fafb; border-radius: 8px; padding: 16px 20px;
+            margin: 12px 0; display: flex; justify-content: space-between; }
+    .stat-label { color: #6b7280; font-size: 14px; }
+    .stat-value { font-weight: 600; font-size: 16px; }
+    .bar-wrap { background: #e5e7eb; border-radius: 9999px;
+                height: 8px; margin: 20px 0; overflow: hidden; }
+    .bar-fill  { height: 100%; border-radius: 9999px;
+                 background: #ef4444; }
+    .bar-fill.warning { background: #f59e0b; }
+    .cta { display: block; text-align: center; margin: 24px 0 8px;
+           padding: 14px 24px; background: #111827; color: #fff;
+           text-decoration: none; border-radius: 8px; font-weight: 500; }
+    .footer { padding: 20px 32px; text-align: center;
+              color: #9ca3af; font-size: 13px; border-top: 1px solid #f3f4f6; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header: red if over budget, amber if at 80% -->
+  <div th:class="${isOverBudget} ? 'header' : 'header warning'">
+    <h1 th:text="${isOverBudget}
+      ? '⚠️ Budget exceeded'
+      : '📊 80% of budget used'">Budget Alert</h1>
+  </div>
+
+  <div class="body">
+    <p>Hi <strong th:text="${displayName}">there</strong>,</p>
+    <p th:if="${isOverBudget}">
+      Your <strong th:text="${categoryName}">category</strong> budget has been exceeded this month.
+    </p>
+    <p th:unless="${isOverBudget}">
+      You've used 80% of your <strong th:text="${categoryName}">category</strong>
+      budget this month.
+    </p>
+
+    <div class="stat">
+      <span class="stat-label">Budget</span>
+      <span class="stat-value" th:text="'$' + ${#numbers.formatDecimal(budgetAmount,1,2)}">$0.00</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Spent</span>
+      <span class="stat-value" th:text="'$' + ${#numbers.formatDecimal(spentAmount,1,2)}">$0.00</span>
+    </div>
+
+    <div class="bar-wrap">
+      <div th:class="${isOverBudget} ? 'bar-fill' : 'bar-fill warning'"
+           th:style="'width:' + ${thresholdPercent} + '%'"></div>
+    </div>
+
+    <a class="cta" href="http://localhost:5173/budgets">View your budgets →</a>
+  </div>
+
+  <div class="footer">
+    You're receiving this because budget alerts are enabled in your FinTrack account.
+    <br>You can turn them off in your notification settings.
+  </div>
+
+</div>
+</body>
+</html>

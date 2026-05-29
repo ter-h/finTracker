@@ -3,68 +3,96 @@ package com.fintrack.service.notification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.thymeleaf.TemplateEngine;
-import org.thymeleaf.context.Context;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
-import jakarta.mail.internet.MimeMessage;
+import jakarta.annotation.PostConstruct;
+
+import org.springframework.http.*;
+
 import java.math.BigDecimal;
-import java.util.Locale;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class EmailService {
 
-    private final JavaMailSender  mailSender;
-    private final TemplateEngine  templateEngine;
+    @Value("${mailgun.api.key}")
+    private String apiKey;
 
-    @Value("${app.mail.from}")
-    private String fromAddress;
+    @Value("${mailgun.domain}")
+    private String domain;
 
-    // @Async means this runs in a background thread
-    // The HTTP request returns immediately without waiting for the email
+    @PostConstruct
+    void debug() {
+        System.out.println("Mailgun key loaded: " + apiKey);
+    }
+
+    private final org.springframework.web.client.RestTemplate restTemplate =
+            new org.springframework.web.client.RestTemplate();
+
     @Async
     public void sendBudgetAlert(
-        String toEmail,
-        String displayName,
-        String categoryName,
-        BigDecimal budgetAmount,
-        BigDecimal spentAmount,
-        int thresholdPercent
+            String toEmail,
+            String displayName,
+            String categoryName,
+            BigDecimal budgetAmount,
+            BigDecimal spentAmount,
+            int thresholdPercent
     ) {
         try {
-            Context ctx = new Context(Locale.ENGLISH);
-            ctx.setVariable("displayName",      displayName);
-            ctx.setVariable("categoryName",     categoryName);
-            ctx.setVariable("budgetAmount",     budgetAmount);
-            ctx.setVariable("spentAmount",      spentAmount);
-            ctx.setVariable("thresholdPercent", thresholdPercent);
-            ctx.setVariable("isOverBudget",     thresholdPercent >= 100);
-
             String subject = thresholdPercent >= 100
-                ? "⚠️ Budget exceeded: " + categoryName
-                : "📊 80% of budget used: " + categoryName;
+                    ? "⚠️ Budget exceeded: " + categoryName
+                    : "📊 80% of budget used: " + categoryName;
 
-            String html = templateEngine.process("email/budget-alert", ctx);
+            String text = buildMessage(displayName, categoryName,
+                    budgetAmount, spentAmount, thresholdPercent);
 
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-            helper.setFrom(fromAddress);
-            helper.setTo(toEmail);
-            helper.setSubject(subject);
-            helper.setText(html, true);   // true = HTML email
+            String url = "https://api.mailgun.net/v3/" + domain + "/messages";
 
-            mailSender.send(message);
-            log.info("Budget alert sent: to={} category={} threshold={}%",
-                toEmail, categoryName, thresholdPercent);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setBasicAuth("api", apiKey);
+            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+            MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+            body.add("from", "FinTrack <mail@" + domain + ">");
+            body.add("to", toEmail);
+            body.add("subject", subject);
+            body.add("text", text);
+
+            HttpEntity<MultiValueMap<String, String>> request =
+                    new HttpEntity<>(body, headers);
+
+            restTemplate.postForEntity(url, request, String.class);
+
+            log.info("Budget alert sent via Mailgun: to={} category={} threshold={}%",
+                    toEmail, categoryName, thresholdPercent);
 
         } catch (Exception e) {
-            // Don't crash the app if email fails — just log it
-            log.error("Failed to send budget alert email to {}: {}", toEmail, e.getMessage());
+            log.error("Failed to send Mailgun email to {}: {}", toEmail, e.getMessage());
         }
+    }
+
+    private String buildMessage(
+            String name,
+            String category,
+            BigDecimal budget,
+            BigDecimal spent,
+            int threshold
+    ) {
+        return """
+                Hi %s,
+
+                Your budget alert has been triggered.
+
+                Category: %s
+                Budget: %s
+                Spent: %s
+                Threshold: %d%%
+
+                FinTrack
+                """.formatted(name, category, budget, spent, threshold);
     }
 }

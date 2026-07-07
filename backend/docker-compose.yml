@@ -27,5 +27,24 @@ services:
       timeout: 3s
       retries: 5
 
+  backend:
+    build:
+      context: .
+      dockerfile: DockerFile
+    container_name: fintrack-backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/fintrack
+      SPRING_DATASOURCE_USERNAME: fintrack
+      SPRING_DATASOURCE_PASSWORD: fintrack
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+
 volumes:
   postgres_data:

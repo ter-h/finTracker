@@ -39,12 +39,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/fintrack
-      SPRING_DATASOURCE_USERNAME: fintrack
-      SPRING_DATASOURCE_PASSWORD: fintrack
-      SPRING_DATA_REDIS_HOST: redis
-      SPRING_DATA_REDIS_PORT: 6379
+    env_file:
+      - .env
 
 volumes:
   postgres_data:

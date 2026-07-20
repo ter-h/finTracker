@@ -129,6 +129,7 @@ class AuthServiceTest {
 
     }
 
+    @Test
     void login_withWrongPassword_throwsUnauthorisedException() {
         LoginRequest req = new LoginRequest(
             "existing@example.com", "password123");
@@ -144,11 +145,11 @@ class AuthServiceTest {
         when(userRepository.findByEmailAndDeletedAtIsNull("existing@example.com")).thenReturn(Optional.of(existingUser));
 
         when(passwordEncoder.matches("password123", existingUser.getPasswordHash())).thenReturn(false);
-        when(jwtService.generateToken(existingUserId, "existing@example.com")).thenReturn("fake-jwt-token");
         UnauthorisedException ex = assertThrows(UnauthorisedException.class, () -> authService.login(req));
         assertThat(ex.getMessage()).isEqualTo("Invalid email or password");
     }
 
+    @Test
     void login_withUnknownEmail_throwsUnauthorisedException() {
         LoginRequest req = new LoginRequest("new@example.com", "password123");
         
@@ -159,8 +160,5 @@ class AuthServiceTest {
 
 
     }
-    // TODO: login_withUnknownEmail_throwsUnauthorisedException
-    //   - stub userRepository.findByEmailAndDeletedAtIsNull(...) to return Optional.empty()
-    //   - assert authService.login(request) throws UnauthorisedException
-    //   - verify passwordEncoder.matches(...) is NEVER called (no user to check a password against)
+    
 }

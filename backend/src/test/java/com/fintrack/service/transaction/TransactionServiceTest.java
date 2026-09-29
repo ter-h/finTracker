@@ -2,6 +2,7 @@ package com.fintrack.service.transaction;
 
 import com.fintrack.domain.enums.TransactionType;
 import com.fintrack.domain.model.Account;
+import com.fintrack.domain.model.Category;
 import com.fintrack.domain.model.Transaction;
 import com.fintrack.domain.model.User;
 import com.fintrack.exception.ResourceNotFoundException;
@@ -133,6 +134,105 @@ class TransactionServiceTest {
 
         assertThrows(ResourceNotFoundException.class,
             () -> transactionService.createTransaction(userId, req));
+        verify(transactionRepository, never()).save(any());
+    }
+
+    @Test
+    void createTransaction_whenCategoryBelongsToAnotherUser_throwsAndDoesNotSave() {
+        // Regression test: createTransaction used to look up categories with an
+        // unscoped findById(), letting a user tag their transaction with another
+        // user's private category. It must now use findByIdAndAvailableForUser,
+        // which returns empty for a category owned by someone else.
+        UUID userId = UUID.randomUUID();
+        UUID accountId = UUID.randomUUID();
+        UUID otherUsersCategoryId = UUID.randomUUID();
+
+        User user = new User();
+        user.setId(userId);
+
+        Account account = new Account();
+        account.setId(accountId);
+        account.setBalance(new BigDecimal("100.00"));
+
+        CreateTransactionRequest req = new CreateTransactionRequest(
+            accountId, otherUsersCategoryId, TransactionType.EXPENSE,
+            new BigDecimal("30.00"), "Groceries", null, LocalDate.now()
+        );
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(accountRepository.findByIdAndUserId(accountId, userId)).thenReturn(Optional.of(account));
+        when(categoryRepository.findByIdAndAvailableForUser(otherUsersCategoryId, userId))
+            .thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+            () -> transactionService.createTransaction(userId, req));
+        verify(transactionRepository, never()).save(any());
+    }
+
+    @Test
+    void createTransaction_whenCategoryAvailableToUser_attachesCategory() {
+        UUID userId = UUID.randomUUID();
+        UUID accountId = UUID.randomUUID();
+        UUID categoryId = UUID.randomUUID();
+
+        User user = new User();
+        user.setId(userId);
+
+        Account account = new Account();
+        account.setId(accountId);
+        account.setBalance(new BigDecimal("100.00"));
+
+        Category category = new Category();
+        category.setId(categoryId);
+        category.setName("Groceries");
+
+        CreateTransactionRequest req = new CreateTransactionRequest(
+            accountId, categoryId, TransactionType.EXPENSE,
+            new BigDecimal("30.00"), "Groceries", null, LocalDate.now()
+        );
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(accountRepository.findByIdAndUserId(accountId, userId)).thenReturn(Optional.of(account));
+        when(categoryRepository.findByIdAndAvailableForUser(categoryId, userId))
+            .thenReturn(Optional.of(category));
+        when(transactionRepository.save(any(Transaction.class))).thenAnswer(inv -> {
+            Transaction t = inv.getArgument(0);
+            t.setId(UUID.randomUUID());
+            return t;
+        });
+
+        TransactionResponse res = transactionService.createTransaction(userId, req);
+
+        assertThat(res.categoryId()).isEqualTo(categoryId);
+    }
+
+    @Test
+    void updateTransaction_whenCategoryBelongsToAnotherUser_throwsAndDoesNotSave() {
+        UUID userId = UUID.randomUUID();
+        UUID txId = UUID.randomUUID();
+        UUID otherUsersCategoryId = UUID.randomUUID();
+
+        Account account = new Account();
+        account.setId(UUID.randomUUID());
+        account.setBalance(new BigDecimal("100.00"));
+
+        Transaction t = new Transaction();
+        t.setId(txId);
+        t.setAccount(account);
+        t.setType(TransactionType.EXPENSE);
+        t.setAmount(new BigDecimal("20.00"));
+        t.setDate(LocalDate.now());
+
+        UpdateTransactionRequest req = new UpdateTransactionRequest(
+            null, otherUsersCategoryId, null, null, null, null, null
+        );
+
+        when(transactionRepository.findByIdAndUserId(txId, userId)).thenReturn(Optional.of(t));
+        when(categoryRepository.findByIdAndAvailableForUser(otherUsersCategoryId, userId))
+            .thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+            () -> transactionService.updateTransaction(userId, txId, req));
         verify(transactionRepository, never()).save(any());
     }
 

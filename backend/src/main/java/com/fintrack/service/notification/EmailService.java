@@ -8,8 +8,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import jakarta.annotation.PostConstruct;
-
 import org.springframework.http.*;
 
 import java.math.BigDecimal;
@@ -24,11 +22,6 @@ public class EmailService {
 
     @Value("${mailgun.domain}")
     private String domain;
-
-    @PostConstruct
-    void debug() {
-        System.out.println("Mailgun key loaded: " + apiKey);
-    }
 
     private final org.springframework.web.client.RestTemplate restTemplate =
             new org.springframework.web.client.RestTemplate();

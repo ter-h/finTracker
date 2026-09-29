@@ -133,7 +133,7 @@ class BudgetServiceTest {
         );
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(cat));
+        when(categoryRepository.findByIdAndAvailableForUser(categoryId, userId)).thenReturn(Optional.of(cat));
         when(budgetRepository.findByUserIdAndCategoryIdAndMonth(userId, categoryId, month))
             .thenReturn(Optional.empty());
         when(budgetRepository.save(any(Budget.class))).thenAnswer(inv -> {
@@ -179,7 +179,32 @@ class BudgetServiceTest {
         );
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(categoryRepository.findById(categoryId)).thenReturn(Optional.empty());
+        when(categoryRepository.findByIdAndAvailableForUser(categoryId, userId)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+            () -> budgetService.createBudget(userId, req));
+        verify(budgetRepository, never()).save(any());
+    }
+
+    @Test
+    void createBudget_whenCategoryBelongsToAnotherUser_throwsResourceNotFoundException() {
+        // Regression test: createBudget used to look up categories with an unscoped
+        // findById(), letting a user attach another user's private category to their
+        // own budget (and leak its name/color back in the response). It must now use
+        // findByIdAndAvailableForUser, which returns empty for a category owned by
+        // someone else and not marked as a shared system category.
+        UUID userId = UUID.randomUUID();
+        UUID otherUsersCategoryId = UUID.randomUUID();
+        User user = new User();
+        user.setId(userId);
+
+        CreateBudgetRequest req = new CreateBudgetRequest(
+            otherUsersCategoryId, LocalDate.of(2026, 7, 1), new BigDecimal("300.00"), false
+        );
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(categoryRepository.findByIdAndAvailableForUser(otherUsersCategoryId, userId))
+            .thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class,
             () -> budgetService.createBudget(userId, req));
@@ -202,7 +227,7 @@ class BudgetServiceTest {
         );
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(cat));
+        when(categoryRepository.findByIdAndAvailableForUser(categoryId, userId)).thenReturn(Optional.of(cat));
         when(budgetRepository.findByUserIdAndCategoryIdAndMonth(userId, categoryId, month))
             .thenReturn(Optional.of(existing));
 

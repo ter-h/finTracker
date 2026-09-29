@@ -84,7 +84,7 @@ public class TransactionService {
         Category category = null;
         if (request.categoryId() != null) {
             category = categoryRepository
-                .findById(request.categoryId())
+                .findByIdAndAvailableForUser(request.categoryId(), userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
         }
 
@@ -134,7 +134,7 @@ public class TransactionService {
         }
         if (request.categoryId() != null) {
             Category category = categoryRepository
-                .findById(request.categoryId())
+                .findByIdAndAvailableForUser(request.categoryId(), userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
             t.setCategory(category);
         }

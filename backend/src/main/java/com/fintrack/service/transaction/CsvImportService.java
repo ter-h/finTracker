@@ -44,10 +44,10 @@ public class CsvImportService {
     // Date formats we try to parse — covers most bank export formats
     private static final List<DateTimeFormatter> DATE_FORMATS = List.of(
         DateTimeFormatter.ofPattern("yyyy-MM-dd"),
-        DateTimeFormatter.ofPattern("MM/dd/yyyy"),
         DateTimeFormatter.ofPattern("dd/MM/yyyy"),
-        DateTimeFormatter.ofPattern("MM-dd-yyyy"),
         DateTimeFormatter.ofPattern("dd-MM-yyyy"),
+        DateTimeFormatter.ofPattern("MM/dd/yyyy"),
+        DateTimeFormatter.ofPattern("MM-dd-yyyy"),
         DateTimeFormatter.ofPattern("yyyyMMdd")
     );
 

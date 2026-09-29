@@ -49,7 +49,8 @@ public class BudgetService {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        Category category = categoryRepository.findById(request.categoryId())
+        Category category = categoryRepository
+            .findByIdAndAvailableForUser(request.categoryId(), userId)
             .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 
         LocalDate firstDay = request.month().withDayOfMonth(1);

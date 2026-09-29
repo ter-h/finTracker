@@ -17,4 +17,10 @@ public interface CategoryRepository extends JpaRepository<Category, UUID> {
     List<Category> findAvailableForUser(UUID userId);
 
     Optional<Category> findByIdAndUserId(UUID id, UUID userId);
+
+    // Same visibility rule as findAvailableForUser, but scoped to one category id —
+    // used to verify a category a request references is actually usable by this user
+    // (either a shared system category or one they own) before attaching it to anything.
+    @Query("SELECT c FROM Category c WHERE c.id = :id AND (c.isSystem = true OR c.user.id = :userId)")
+    Optional<Category> findByIdAndAvailableForUser(UUID id, UUID userId);
 }

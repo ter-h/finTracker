@@ -2,6 +2,7 @@ package com.fintrack.web.controller;
 
 import com.fintrack.service.transaction.CsvImportService;
 import com.fintrack.web.dto.response.ImportSummaryResponse;
+import com.fintrack.exception.BadRequestException;
 import org.springframework.web.multipart.MultipartFile;
 import com.fintrack.security.UserPrincipal;
 import com.fintrack.service.transaction.TransactionService;
@@ -86,8 +87,11 @@ public class TransactionController {
     public ResponseEntity<ImportSummaryResponse> importCsv(
         @AuthenticationPrincipal UserPrincipal principal,
         @RequestParam UUID accountId,
-        @RequestParam MultipartFile file
+        @RequestParam(required = false) MultipartFile file
     ) {
+        if (file == null) {
+            throw new BadRequestException("File is required");
+        }
         return ResponseEntity.ok(
             csvImportService.importCsv(principal.getId(), accountId, file)
         );

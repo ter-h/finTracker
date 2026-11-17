@@ -36,7 +36,6 @@ public class TransactionService {
     private final CategoryRepository    categoryRepository;
     private final UserRepository        userRepository;
 
-    // ── List ──────────────────────────────────────────────────────────────────
 
     public PageResponse<TransactionResponse> listTransactions(
         UUID userId, int page, int size, UUID accountId
@@ -57,7 +56,6 @@ public class TransactionService {
         return PageResponse.from(result, TransactionResponse::from);
     }
 
-    // ── Get single ────────────────────────────────────────────────────────────
 
     public TransactionResponse getTransaction(UUID userId, UUID transactionId) {
         Transaction t = transactionRepository
@@ -66,7 +64,6 @@ public class TransactionService {
         return TransactionResponse.from(t);
     }
 
-    // ── Create ────────────────────────────────────────────────────────────────
 
     @Transactional
     public TransactionResponse createTransaction(
@@ -75,12 +72,10 @@ public class TransactionService {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        // Verify the account belongs to this user
         Account account = accountRepository
             .findByIdAndUserId(request.accountId(), userId)
             .orElseThrow(() -> new ResourceNotFoundException("Account not found"));
 
-        // Category is optional
         Category category = null;
         if (request.categoryId() != null) {
             category = categoryRepository
